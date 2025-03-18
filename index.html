@@ -8,6 +8,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        flex-direction: column;
         min-height: 100vh;
         margin: 0;
         padding: 20px;
@@ -31,6 +32,14 @@
         background-color: #45a049;
       }
 
+      select {
+        font-size: 16px;
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        margin-bottom: 15px;
+      }
+
       .spinner {
         display: none;
         margin-top: 20px;
@@ -45,6 +54,8 @@
         background: #e7f7e7;
         border-radius: 8px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 800px;
       }
 
       .news-item {
@@ -65,17 +76,63 @@
         color: #555;
         line-height: 1.6;
       }
+
+      .news-item .date-time {
+        font-size: 14px;
+        color: #777;
+        margin-top: 10px;
+        font-style: italic;
+      }
+
+      .tooltip {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+      }
+
+      .tooltip .tooltiptext {
+        visibility: hidden;
+        width: 120px;
+        background-color: black;
+        color: #fff;
+        text-align: center;
+        border-radius: 5px;
+        padding: 5px;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%; 
+        left: 50%;
+        margin-left: -60px;
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+
+      .tooltip:hover .tooltiptext {
+        visibility: visible;
+        opacity: 1;
+      }
+
     </style>
   </head>
   <body>
+    <h1>Latest News Generator</h1>
+    <select id="category">
+      <option value="world">World</option>
+      <option value="technology">Technology</option>
+      <option value="sports">Sports</option>
+      <option value="entertainment">Entertainment</option>
+      <option value="business">Business</option>
+    </select>
     <button onclick="getNews()">Generate News</button>
+    <button onclick="clearNews()">Clear News</button>
     <div class="spinner" id="spinner" style="display: none;">Loading...</div>
     <div id="result"></div>
 
     <script>
       async function getNews() {
+        const category = document.getElementById("category").value;
         const API_KEY = "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";
-        
+
         document.getElementById("spinner").style.display = "block";
         
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -89,7 +146,7 @@
             messages: [
               {
                 role: "user",
-                content: "Generate news in div tag with css no html and body tag",
+                content: `Generate news in category: ${category}`,
               },
             ],
           }),
@@ -98,17 +155,25 @@
         const body = await response.json();
         console.log(body);
 
-        
         document.getElementById("spinner").style.display = "none";
 
-       
         const newDiv = document.createElement("div");
         newDiv.classList.add("news-item");
+
+      
+        const currentDateTime = new Date();
+        const formattedDateTime = currentDateTime.toLocaleString();
+
         newDiv.innerHTML = `
-          <h2>Breaking News</h2>
+          <h2 class="tooltip">Breaking News<span class="tooltiptext">Latest update in ${category} news</span></h2>
           <p>${body.choices[0].message.content}</p>
+          <div class="date-time">Published on: ${formattedDateTime}</div>
         `;
         document.getElementById("result").appendChild(newDiv);
+      }
+
+      function clearNews() {
+        document.getElementById("result").innerHTML = "";
       }
     </script>
   </body>
